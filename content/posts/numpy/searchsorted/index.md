@@ -48,7 +48,7 @@ def searchsorted_py(a, xs):
     return res
 ```
 
-![](images/figure1-fs8.png)
+![ ](images/figure1-fs8.png)
 
 Running time per query grows logarithmically as the input size grows (note the logarithmic scale of x-axis).
 
@@ -94,7 +94,7 @@ def searchsorted_py_np(a, xs):
     return lo
 ```
 
-![](images/figure2-fs8.png)
+![ ](images/figure2-fs8.png)
 
 In this implementation, different queries can shrink their search intervals at different rates, so they may require different numbers of iterations to converge.
 
@@ -131,7 +131,7 @@ def searchsorted_py_np_fixed(a, xs):
 
 Removing the `active` tracker makes it up to 2× faster.
 
-![](images/figure3-fs8.png)
+![ ](images/figure3-fs8.png)
 
 A similar formulation can already be found in the Python ecosystem. For example, [JAX’s scan-based implementation](https://github.com/jax-ml/jax/blob/a6e4a8b95a731269bdf23e5b3e30da2f8494bb28/jax/_src/numpy/hijax.py#L330)
 
@@ -154,7 +154,7 @@ n_levels = int(np.ceil(np.log2(n + 1)))
 
 Let’s compare the performance of this vectorized implementation with NumPy’s native `searchsorted` (using NumPy 2.4).
 
-![](images/figure4-fs8.png)
+![ ](images/figure4-fs8.png)
 
 Our vectorized Python implementation can be an order of magnitude faster than the native one for inputs with several keys. To understand why, let's take a look at `NumPy 2.4` implementation:
 
@@ -252,7 +252,7 @@ This formulation is closely related to the branchless binary search approach dis
 
 The reformulated implementation is significantly faster:
 
-![](images/figure6-fs8.png)
+![ ](images/figure6-fs8.png)
 
 ### Porting it into C++
 
@@ -335,7 +335,7 @@ Note that we exploited a property of the first iteration of the binary search. B
 
 This implementation was ported directly into NumPy as part of PR [#30517](https://github.com/numpy/numpy/pull/30517), which was included in the [2.5 release](https://numpy.org/devdocs/release/2.5.0-notes.html#improved-performance-of-numpy-searchsorted). Now let's do a final comparison between NumPy 2.4 and 2.5, and our vectorized Python implementation:
 
-![](images/figure7-fs8.png)
+![ ](images/figure7-fs8.png)
 
 The native 2.5 version is up to 25× faster than NumPy 2.4's implementation in our benchmarks. Compared with the vectorized Python implementation, the C++ implementation can be up to 2× as fast for smaller arrays. This difference becomes less significant as the array size grows. There is also a memory advantage over the vectorized Python implementation: the Python implementation requires additional arrays to store the search state (`low` and `mid`, or `base` and `base + length`), whereas the C++ implementation keeps length as a scalar. As a result, the C++ implementation uses only $O(1)$ additional memory, while the NumPy formulation requires memory proportional to the number of queries.
 
@@ -347,13 +347,13 @@ TensorFlow and PyTorch follow a different approach from JAX and NumPy. While JAX
 
 In the benchmarks, we limited parallelism to 8 cores and we increased the number of query keys from 10,000 to 20,000. This gives the multithreaded implementations enough independent work to amortize thread-scheduling overhead.
 
-![](images/figure8-fs8.png)
+![ ](images/figure8-fs8.png)
 
 The benchmark shows that NumPy is competitive with the selected libraries in our benchmarks. All implementations exhibit similar behavior once the search array grows beyond the CPU cache.
 
 If we disable multithreading, the performance of PyTorch and TensorFlow degrades, and both exhibit a similar trend to NumPy 2.4's implementation. Once the search array grows beyond the CPU cache, the cost of memory accesses dominates.
 
-![](images/figure9-fs8.png)
+![ ](images/figure9-fs8.png)
 
 It would be worth benchmarking whether both techniques could be combined: batching binary searches within each thread. However, once the memory subsystem becomes saturated, additional cores can compete for the same memory bandwidth. At that point, improving the memory access patterns may be a more promising direction, for example by using a different layout such as the Eytzinger layout (discussed in detail in the [Algorithmica book](https://en.algorithmica.org/hpc/data-structures/binary-search/#eytzinger-layout)).
 
